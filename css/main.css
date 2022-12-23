@@ -1,0 +1,29 @@
+body{
+    text-align: center;
+}
+.board{
+    margin: auto;
+    width: 500px;
+    height: 500px;
+    background: red;
+    position: relative;
+}
+
+.cobra{
+    width: 10px;
+    height: 10px;
+    background: black;
+    border-radius: 100%;
+    position: absolute;
+    box-sizing: border-box;
+}
+
+.food{
+    width: 10px;
+    height: 10px;
+    background: yellow;
+    border-radius: 100%;
+    position: absolute;
+}
+
+
