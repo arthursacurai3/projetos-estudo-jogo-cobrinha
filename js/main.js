@@ -10,10 +10,13 @@
     let pts = 0
     let lastPts = 0
     let _youLoose = false
+    let intervalo = 300
+    let arrCobra = []
+    let allowKeyDown = true
+    let timer 
 
     let boardWidth = $board.offsetWidth
     let boardHeight = $board.offsetHeight
-    let intervalo = 300
 
     const directions = {
         ArrowUp : [0,-10,'y'],
@@ -21,8 +24,6 @@
         ArrowRight : [10,0,'x'],
         ArrowLeft : [-10,0,'x']
     }
-
-    let arrCobra = []
 
     function novoPedaco(left, top){
         const $novoPedaco = document.createElement('div')
@@ -38,36 +39,38 @@
         cobraSize = $cobra.length
     }
 
-    function init(){
+    function initGame(){
         novoPedaco(250,250);
         novoPedaco(240,250);
         novoPedaco(230,250);
         getPts()
+        console.log({arrCobra})
 
         showPoints(0)
 
         lastPts == 0 || lastPts == null ? atualizarRecorde(0) : atualizarRecorde(lastPts);
-        if(_youLoose == true){
-            _youLoose == false
-        }
+
+        timer = setTimeout(move, intervalo)
     }
 
-    init()
+    initGame()
 
     window.addEventListener('keydown',function(e){
-        if(directions[e.key][2] !== directions[actualDirection][2]){
+        if(directions[e.key][2] !== directions[actualDirection][2] && allowKeyDown){
             actualDirection = e.key;
-        } else{
+        } else {
             return
         }
     })
     
     function move(){
+        allowKeyDown = false
         if(_youLoose === true){
             return
         }
         let left = directions[actualDirection][0]
         let top = directions[actualDirection][1]
+
 
         if(left > 0){
             if(arrCobra[0].left == boardWidth - left){
@@ -96,15 +99,24 @@
                 arrCobra[0].top += top;
             }
         }
+
+        console.log({left, top, boardWidth, headeLeft: arrCobra[0].left, headTop: arrCobra[0].top})
+
+        atualizaPosicao(arrCobra[0].left, arrCobra[0].top);
         
         [...$cobra].forEach((el,idx) => {
+            console.log({$cobra})
             if(idx !== 0 && $cobra[0].offsetLeft === el.offsetLeft && $cobra[0].offsetTop === el.offsetTop){
                 _youLoose = true
+                if(intervalo < 100){
+                    clearInterval(timer)
+                } else {
+                    clearTimeout(timer)
+                }
                 youLoose()
             }
         })
 
-        atualizaPosicao(arrCobra[0].left, arrCobra[0].top)
 
         if($food.length > 0 && $cobra[cobraSize-1].offsetLeft === $food[0].offsetLeft && $cobra[cobraSize-1].offsetTop === $food[0].offsetTop){
             novoPedaco($food[0].offsetLeft, $food[0].offsetTop)
@@ -118,14 +130,21 @@
                 intervalo = parseInt(intervalo * 0.9)
             }
         } 
+
+        updateTimer()
+    }
+
+    function updateTimer(){
         if(intervalo < 100){
+            allowKeyDown = true
             intervalo = 100
             timer = setInterval(move,100)
         } else if (intervalo != 100) {
+            allowKeyDown = true
             timer = setTimeout(move, intervalo) 
         }
     }
-    let timer = setTimeout(move, intervalo)
+    
     
     function novoPedaco(left, top){
         const $novoPedaco = document.createElement('div')
@@ -154,16 +173,10 @@
     }
     
     setInterval(novaComida,1000)
-    // direcao que a cobra esta indo, última seta do teclado (direcao inicial vai ser aleatoria)
-    
-    // 
+
     function atualizaPosicao(left, top){
         $cobra[cobraSize - 1].setAttribute('style',`left: ${left}px; top:${top}px;`)
         $board.insertBefore($cobra[cobraSize - 1],$cobra[0])
-        $cobra[0].style.border = '2px solid white'
-        $cobra[0].style.zIndex = '1'
-        $cobra[1].style.border = ''
-        $cobra[0].style.zIndex = ''
     }
     
     function getPts(){
@@ -178,21 +191,18 @@
         $record.textContent = 'Recorde: ' + points
         localStorage.setItem('recorde', points)
     }
-    // returna objeto cobra com posição XY do ultimo pedaço
 
     function youLoose(){
         console.log($board.innerHTML)
-        $board.outerHtml = ''
         console.log($board.innerHTML)
-        $cobra.innerHtml=''
-        arrCobra = []
         console.log(timer)
-        clearInterval(timer)
+        $board.innerHTML = ''
+
         console.log(timer)
-        alert('Você perdeu')
-        pts = 0
-        init()
-        timer = setTimeout(move, 300)
+        if(window.confirm('Você perdeu, quer recomeçar?')){
+            location.reload()
+        }
+        console.log({arrCobra})
         showPoints(pts)
     }
 
